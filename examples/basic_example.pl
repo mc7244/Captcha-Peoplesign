@@ -72,18 +72,22 @@ if ( $ENV{REQUEST_METHOD} eq 'POST' ) {
         $clientLocation, $peoplesignKey);
     
     if ($allowPass) {
-        print "content-type: text/html\n\n";
+        #print $query->header(
+        #    -type       => 'text/html'
+        #);
+        print "Content-type: text/html\n\n";
         print "OK, you're human!";
     } else {
-        $query->header(
-            Location    => $ENV{HTTP_REFERER}
-        );
+        print "Location: $ENV{HTTP_REFERER}\n\n";
+        #print $query->header(
+        #    Location    => $ENV{HTTP_REFERER}
+        #);
     }
     
     exit 0;
 }
 
-my $peoplesignHTML =  $ps->getPeoplesignHTML(
+my $peoplesignHTML =  $ps->get_html(
     $peoplesignKey, $peoplesignOptions, $clientLocation
 );
 
@@ -111,7 +115,7 @@ sub printExamplePageAndFormHeaders{
     <BODY  style="width: 500px; margin-left: auto; margin-right:auto;">
     <div>
        <p>This page is a demonstration of the peoplesign perl plugin</p>
-       <form method="post" action="example2.pl">
+       <form method="post" action="$ENV{REQUEST_URI}">
     );
 }
 

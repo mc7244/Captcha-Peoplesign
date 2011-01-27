@@ -34,23 +34,23 @@ use constant PEOPLESIGN_CSID_SESSION_VAR_TIMEOUT_SECONDS => 3600;
 use constant PEOPLESIGN_PLUGIN_VERSION => 'Captcha_Peoplesign_perl_' . $VERSION;
 
 sub new {
-  my $class = shift;
-  my $self = bless {}, $class;
-  $self->_initialize( @_ );
-  return $self;
+    my $class = shift;
+    my $self = bless {}, $class;
+    $self->_initialize( @_ );
+    return $self;
 }
 
 sub _initialize {
-  my $self = shift;
-  my $args = shift || {};
+    my $self = shift;
+    my $args = shift || {};
 
-  croak "new must be called with a reference to a hash of parameters"
-   unless 'HASH' eq ref $args;
+    croak "new must be called with a reference to a hash of parameters"
+        unless 'HASH' eq ref $args;
 }
 
 sub _html { shift->{_html} ||= HTML::Tiny->new }
 
-sub getPeoplesignHTML {
+sub get_html {
     my $self = shift;
     my $peoplesignKey = shift;
     my $peoplesignArgs = shift;
@@ -72,22 +72,24 @@ sub getPeoplesignHTML {
     $peoplesignSessionID = $self->getPSCookieValue($clientLocation);
 
     ($status, $peoplesignSessionID) = $self->getPeoplesignSessionID(
-	   $peoplesignKey,
-	   $ENV{REMOTE_ADDR},
-	   $peoplesignArgs,
-	   $clientLocation,
-	   $pluginWrapperVersionInfo,
-	   $peoplesignSessionID);
-    
+       $peoplesignKey,
+       $ENV{REMOTE_ADDR},
+       $peoplesignArgs,
+       $clientLocation,
+       $pluginWrapperVersionInfo,
+       $peoplesignSessionID
+    );
 
     if ($status eq "success") {
-	#an iframe will only be displayed if javascript is disabled
-	#in the browser
-	$peoplesignHTML = $self->getPeoplesignHTMLJavaScript($peoplesignSessionID,
-	                                              $iframeWidth,
-	                                              $iframeHeight);
+    #an iframe will only be displayed if javascript is disabled
+    #in the browser
+    $peoplesignHTML = $self->_get_html_js(
+        $peoplesignSessionID,
+        $iframeWidth,
+        $iframeHeight,
+    );
     } else {
-	$peoplesignHTML = "<p>peoplesign is unavailable ($status)</p>";
+        $peoplesignHTML = "<p>peoplesign is unavailable ($status)</p>";
     }
     $self->printPSCookie($clientLocation, $peoplesignSessionID);
 
@@ -99,7 +101,7 @@ sub getPeoplesignHTML {
 
 #usageNotes
 ##-call this when processing the user's response to peoplesign ONLY if you 
-## setup peoplesign with getPeoplesignHTML
+## setup peoplesign with get_html
 
 #description
 ##-looks for peoplesignSessionID and peoplesignResponseString in the request 
@@ -127,7 +129,7 @@ sub getPeoplesignHTML {
 ### browser will have already sent it to the peoplesign server.
 
 ##3)client Location
-###-MUST match the argument passed to getPeoplesignHTML.
+###-MUST match the argument passed to get_html.
 
 ##4)peoplesignKey
 ###-obtain your key from peoplesign.com
@@ -151,25 +153,25 @@ sub isPeoplesignResponseCorrect {
     #Try to find it in the HTTP Post/Get if it's not present
     my $cgi;
     if (!$peoplesignSessionID){
-	$cgi = CGI::new();
-	$peoplesignSessionID =$cgi->param(PEOPLESIGN_CHALLENGE_SESSION_ID_NAME);
+    $cgi = CGI::new();
+    $peoplesignSessionID =$cgi->param(PEOPLESIGN_CHALLENGE_SESSION_ID_NAME);
     }
 
     if (!$peoplesignResponseString){
-	if (!$cgi) {$cgi = CGI::new();}
-	$peoplesignResponseString = 
-	    $cgi->param(PEOPLESIGN_CHALLENGE_RESPONSE_NAME);
-	
+    if (!$cgi) {$cgi = CGI::new();}
+    $peoplesignResponseString = 
+        $cgi->param(PEOPLESIGN_CHALLENGE_RESPONSE_NAME);
+    
     }
 
     if (!$peoplesignSessionID) {
-	$self->printError("Can't find peoplesignSessionID in "
-		   ."isPeoplesignResponseCorrect.", $self->getCallerInfoString());
+    $self->printError("Can't find peoplesignSessionID in "
+           ."isPeoplesignResponseCorrect.", $self->getCallerInfoString());
     }
 
     my $allowPass = $self->processPeoplesignResponse(
        $peoplesignSessionID,$peoplesignResponseString,
-	$clientLocation, $peoplesignKey);
+    $clientLocation, $peoplesignKey);
    
     $self->printPSCookie($clientLocation, $peoplesignSessionID);
     
@@ -210,7 +212,7 @@ sub isPeoplesignResponseCorrect {
 ### the request variable named PEOPLESIGN_CHALLENGE_RESPONSE_NAME won't be set
 
 ##3)client Location
-###-MUST match the argument passed to getPeoplesignHTML.
+###-MUST match the argument passed to get_html.
 
 ##4)peoplesignKey
 ###-obtain your key from peoplesign.com
@@ -227,15 +229,15 @@ sub processPeoplesignResponse {
 
     my $cgi;
     if (!$peoplesignSessionID){
-	$cgi = CGI::new();
-	$peoplesignSessionID =$cgi->param(PEOPLESIGN_CHALLENGE_SESSION_ID_NAME);
+    $cgi = CGI::new();
+    $peoplesignSessionID =$cgi->param(PEOPLESIGN_CHALLENGE_SESSION_ID_NAME);
     }
 
     if (!$peoplesignResponseString){
-	if (!$cgi) {$cgi = CGI::new();}
-	$peoplesignResponseString = 
-	    $cgi->param(PEOPLESIGN_CHALLENGE_RESPONSE_NAME);
-	
+    if (!$cgi) {$cgi = CGI::new();}
+    $peoplesignResponseString = 
+        $cgi->param(PEOPLESIGN_CHALLENGE_RESPONSE_NAME);
+    
     }
 
 
@@ -249,25 +251,25 @@ sub processPeoplesignResponse {
     my $storePSID = 0;
 
     if ($status eq "pass") {
-	$allowPass = 1; $storePSID = 0;
+    $allowPass = 1; $storePSID = 0;
     } elsif ( ($status eq "fail") || ($status eq "notRequested") ||
-	      ($status eq "awaitingResponse") ) {
+          ($status eq "awaitingResponse") ) {
 
-	$allowPass = 0; $storePSID = 1;
+    $allowPass = 0; $storePSID = 1;
     #If $status is invalidChallengeSessionID we can not allow the user to pass.
     #It's highly unusual for this to occur, and probably means the
     #peoplesignSession expired and the client session was still alive.
     #We now abandon this client session. This will trigger a new client session
     #and a new peoplesign session.
     } elsif ( $status eq "invalidChallengeSessionID"){
-	$self->printError("getPeoplesignSessionStatus returned "
-		  ."invalidChallengeSessionID", $self->getCallerInfoString());
-	$allowPass = 0; $storePSID = 0;
+    $self->printError("getPeoplesignSessionStatus returned "
+          ."invalidChallengeSessionID", $self->getCallerInfoString());
+    $allowPass = 0; $storePSID = 0;
     #let the user pass if there's a problem with the peoplesign server
     } elsif ($status eq "badHTTPResponseFromServer") {
-	$allowPass = 1; $storePSID = 0;
+    $allowPass = 1; $storePSID = 0;
     } else {
-	$allowPass = 1; $storePSID = 0;
+    $allowPass = 1; $storePSID = 0;
     }
 
     return $allowPass;
@@ -295,9 +297,9 @@ sub getPeoplesignSessionStatus {
     $peoplesignResponseString = $self->trim($peoplesignResponseString);
 
     if (!$peoplesignResponseString) {
-	my $cgi = CGI::new();
-	$peoplesignResponseString =
-	    $cgi->param(PEOPLESIGN_CHALLENGE_RESPONSE_NAME);
+    my $cgi = CGI::new();
+    $peoplesignResponseString =
+        $cgi->param(PEOPLESIGN_CHALLENGE_RESPONSE_NAME);
     }
 
     my $status = "";
@@ -309,21 +311,21 @@ sub getPeoplesignSessionStatus {
     my $response = $userAgent->post(
                       PEOPLESIGN_GET_CHALLENGE_SESSION_STATUS_URL, 
                       {
-	                PEOPLESIGN_CHALLENGE_SESSION_ID_NAME() => 
-			    $peoplesignSessionID,
+                    PEOPLESIGN_CHALLENGE_SESSION_ID_NAME() => 
+                $peoplesignSessionID,
                         PEOPLESIGN_CHALLENGE_RESPONSE_NAME() =>
-			    $peoplesignResponseString,
-			privateKey => $peoplesignKey,
-			clientLocation => $clientLocation
+                $peoplesignResponseString,
+            privateKey => $peoplesignKey,
+            clientLocation => $clientLocation
                       }
     );
 
     if ($response->is_success){
-	$status = $response->content;
-	$status = $self->trim($status);
+    $status = $response->content;
+    $status = $self->trim($status);
     } else {
-	$self->printError("bad HTTP response from server: " .$response ->status_line."\n", $self->getCallerInfoString());
-	$status = "badHTTPResponseFromServer";
+    $self->printError("bad HTTP response from server: " .$response ->status_line."\n", $self->getCallerInfoString());
+    $status = "badHTTPResponseFromServer";
     }
     return $status;
 }
@@ -368,33 +370,33 @@ sub getPeoplesignSessionID {
     $visitorIP  = $self->trim($visitorIP);
     #ensure private key is not the empty string
     if ($peoplesignKey eq "") {
-	$self->printError("received a private key that was all whitespace or empty\n", $self->getCallerInfoString());
-	return ("invalidPrivateKey", "");
+    $self->printError("received a private key that was all whitespace or empty\n", $self->getCallerInfoString());
+    return ("invalidPrivateKey", "");
     }
 
     #ensure visitorIP is ipv4
     if ( !($visitorIP =~ /^\d\d?\d?\.\d\d?\d?\.\d\d?\d?\.\d\d?\d?$/)) {
-	$self->printError("invalid visitorIP: $visitorIP\n", $self->getCallerInfoString());
-	return ("invalidVisitorIP", "");
+    $self->printError("invalid visitorIP: $visitorIP\n", $self->getCallerInfoString());
+    return ("invalidVisitorIP", "");
     }
 
 
     my $response = $userAgent->post(PEOPLESIGN_GET_CHALLENGE_SESSION_ID_URL, {
-	                privateKey => $peoplesignKey,
-			visitorIP => $visitorIP,
-			%{$peoplesignOptions},
-			clientLocation => $clientLocation,
-			pluginInfo => $pluginWrapperVersionInfo
-			                 ." ".PEOPLESIGN_PLUGIN_VERSION,
-			PEOPLESIGN_CHALLENGE_SESSION_ID_NAME() 
-			    => $peoplesignSessionID
+                    privateKey => $peoplesignKey,
+            visitorIP => $visitorIP,
+            %{$peoplesignOptions},
+            clientLocation => $clientLocation,
+            pluginInfo => $pluginWrapperVersionInfo
+                             ." ".PEOPLESIGN_PLUGIN_VERSION,
+            PEOPLESIGN_CHALLENGE_SESSION_ID_NAME() 
+                => $peoplesignSessionID
     });
 
    if ($response->is_success){
        ($status, $peoplesignSessionID) = split(/\n/, $response->content);
        if ($status ne "success") {
-	   $self->printError("Unsuccessful attempt to get a peoplesign "
-		     ."challenge session: ($status)\n", $self->getCallerInfoString());
+       $self->printError("Unsuccessful attempt to get a peoplesign "
+             ."challenge session: ($status)\n", $self->getCallerInfoString());
        } else{
 
        }
@@ -409,9 +411,7 @@ sub getPeoplesignSessionID {
 }
 
 
-#The HTML returned will tell the browser to use the javascript version if 
-#possible.  If not, it will use the iframe version.
-sub getPeoplesignHTMLJavaScript {
+sub _get_html_js {
     my $self = shift;
     my $peoplesignSessionID = shift;
 
@@ -430,14 +430,13 @@ sub getPeoplesignHTMLJavaScript {
             . '+\(new Date\(\)\).getTime\(\) +\'" id="yeOldePeopleSignJS">'
     })
     . $h->noscript(
-        $self->getPeoplesignHTMLIFrame($peoplesignSessionID, $iframeWidth, $iframeHeight)
+        $self->_get_html_iframe($peoplesignSessionID, $iframeWidth, $iframeHeight)
     );
 
     return $htmlcode;
 }
-#use this if you're sure you want the iframe version of the peoplesign widget 
-#and never the javascript version
-sub getPeoplesignHTMLIFrame{
+
+sub _get_html_iframe {
     my $self = shift;
     my $peoplesignSessionID = shift;
     my $width = shift || PEOPLESIGN_IFRAME_WIDTH;
@@ -489,12 +488,12 @@ sub printPSCookie {
 
     my $expireValue = '+'.PEOPLESIGN_CSID_SESSION_VAR_TIMEOUT_SECONDS.'s';
     if ($doExpire eq "expire"){
-	$expireValue = "now";
+    $expireValue = "now";
     }
 
     my $cookie = CGI::Cookie->new(-name => "psClient_$clientLocation",
-				   -value => $cookieValue,
-				   -expires => $expireValue);
+                   -value => $cookieValue,
+                   -expires => $expireValue);
 
     #$cookie->bake();
     print "Set-Cookie: $cookie\n";

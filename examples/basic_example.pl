@@ -137,34 +137,3 @@ sub _make_page {
     
     return $html;
 }
-sub printExamplePageAndFormHeaders{
-    print "content-type: text/html\n\n";
-    print qq(
-    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-    <HTML>
-    <!--
-    Copyright 2008-2009, MyriComp LLC, All rights reserved.
-    -->
-    <HEAD>
-	<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
-	<META HTTP-EQUIV="Expires" CONTENT="-1">
-	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-	<TITLE>peoplesign demo</TITLE>
-
-    </HEAD>
-    <BODY  style="width: 500px; margin-left: auto; margin-right:auto;">
-    <div>
-       <p>This page is a demonstration of the peoplesign perl plugin</p>
-       <form method="post" action="$ENV{REQUEST_URI}">
-    );
-}
-
-sub printExampleFormAndPageFooters {
-    print qq(
-       <input type="submit" value="submit">
-       </form>
-    </div
-    );
-
-    print qq(</BODY></HTML>);
-}

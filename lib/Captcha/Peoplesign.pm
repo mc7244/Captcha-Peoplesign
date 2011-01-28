@@ -58,6 +58,7 @@ sub get_html {
     my $peoplesignKey = shift || croak 'Provide a key';
     my $clientLocation = shift || croak 'Provide a location';
     my $peoplesignArgs = shift || croak 'Provide some arguments (even an empty string)';
+    my $remoteAddress = shift || croak 'Provide the IP address of the client';
     my $peoplesignSessionID = shift || '';
     my $pluginWrapperVersionInfo = shift || '';
 
@@ -66,7 +67,7 @@ sub get_html {
     my $status = '';
     ($status, $peoplesignSessionID) = $self->_get_peoplesign_sessionid(
        $peoplesignKey,
-       $ENV{REMOTE_ADDR},
+       $remoteAddress,
        $peoplesignArgs,
        $clientLocation,
        $pluginWrapperVersionInfo,
@@ -433,18 +434,7 @@ Generates HTML to display the captcha.
 
 =item C<< $pubkey >>
 
-Your reCAPTCHA public key, from the API Signup Page
-
-=item C<< $error >>
-
-Optional. If set this should be either a string containing a reCAPTCHA
-status code or a result hash as returned by C<< check_answer >>.
-
-=item C<< $use_ssl >>
-
-Optional. Should the SSL-based API be used? If you are displaying a page
-to the user over SSL, be sure to set this to true so an error dialog
-doesn't come up in the user's browser.
+Your Peoplesign public key, from the API Signup Page
 
 =item C<< $options >>
 
@@ -456,44 +446,20 @@ C<< get_options_setter >> for more details.
 Returns a string containing the HTML that should be used to display
 the captcha.
 
-=item C<< get_options_setter( $options ) >>
-
-You can optionally customize the look of the reCAPTCHA widget with some
-JavaScript settings. C<get_options_setter> returns a block of Javascript
-wrapped in <script> .. </script> tags that will set the options to be used
-by the widget.
-
-C<$options> is a reference to a hash that may contain the following keys:
-
-=over
-
-=item C<theme>
-
-Defines which theme to use for reCAPTCHA. Possible values are 'red',
-'white' or 'blackglass'. The default is 'red'.
-
-=item C<tabindex>
-
-Sets a tabindex for the reCAPTCHA text box. If other elements in the
-form use a tabindex, this should be set so that navigation is easier for
-the user. Default: 0.
-
-=back
-
 =item C<< check_answer >>
 
 After the user has filled out the HTML form, including their answer for
 the CAPTCHA, use C<< check_answer >> to check their answer when they
 submit the form. The user's answer will be in two form fields,
-recaptcha_challenge_field and recaptcha_response_field. The reCAPTCHA
-library will make an HTTP request to the reCAPTCHA server and verify the
+recaptcha_challenge_field and recaptcha_response_field. The Peoplesign
+library will make an HTTP request to the Peoplesign server and verify the
 user's answer.
 
 =over
 
 =item C<< $privkey >>
 
-Your reCAPTCHA private key, from the API Signup Page.
+Your Peoplesign private key, from the API Signup Page.
 
 =item C<< $remoteip >>
 

@@ -82,7 +82,9 @@ if ( $ENV{REQUEST_METHOD} eq 'POST' ) {
 my $challengeSessionID = $session->param('challengeSessionID') || '';
 
 my $peoplesignHTML =  $ps->get_html(
-    $peoplesignKey, $clientLocation, $peoplesignOptions, $challengeSessionID,
+    $peoplesignKey, $clientLocation,
+    $peoplesignOptions, $query->remote_addr,
+    $challengeSessionID,
 );
 
 my $form = $h->form({

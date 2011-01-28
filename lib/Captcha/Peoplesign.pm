@@ -92,33 +92,6 @@ sub get_html {
     return $self->_html->p('peoplesign is unavailable ($status)');
 }
 
-
-#description
-##-calls getPeoplesignSessionStatus, refreshes the cookie expiration time
-
-#parameters
-##1)peoplesignKey
-###-obtain your key from peoplesign.com
-
-##2)client Location
-###-MUST match the argument passed to get_html.
-
-##3)peoplesignSessionID
-###-get this from the request variable named 
-### PEOPLESIGN_CHALLENGE_SESSION_ID_NAME
-### when processing the form
-###submission that included the peoplesign HTML.  It should have been passed
-###as a hidden input.
-
-##4)peoplesignResponseString
-###-get this from the response variable named PEOPLESIGN_CHALLENGE_RESPONSE_NAME] when processing
-### the form submission
-### that included the peoplesign HTML.  It should have been passed as a hidden
-###input.
-###-if you are using getPeoplesignHTMLIFrame (rare)
-### the request variable named PEOPLESIGN_CHALLENGE_RESPONSE_NAME won't be set
-
-# Return value: hashref with is_valid (1 or 0) and error (if any)
 sub check_answer {
     my ($self, $args) = @_;
 
@@ -160,6 +133,8 @@ sub check_answer {
     croak "Exception processing Peoplesign response: [status $status]"
         . $self->_get_caller_info_string();
 }
+
+# ## Private methods ##
 
 # Contacts the peoplesign server to validate the user's response.
 # Return: string ('pass', 'fail', 'awaitingResponse', 'badHTTPResponseFromServer')
@@ -329,8 +304,8 @@ sub _get_html_iframe {
 
 sub _get_caller_info_string {
     my $self = shift;
-    #For the second subroutine up the call stack return the following:
-    #file: subroutine:  line number
+    # For the second subroutine up the call stack return the following:
+    # file: subroutine:  line number
     return (caller(2))[1] .": " .(caller(2))[3] .": line " .(caller(2))[2];
 }
 
@@ -338,8 +313,8 @@ sub _print_error {
     my $self = shift;
     my $message = shift;
 
-    #if an error source was passed here, print it.  Else
-    #we have to determine it;
+    # If an error source was passed here, print it.  Else
+    # we have to determine it;
     my $errorSourceInfo = shift || $self->_get_caller_info_string();
 
     print STDERR "ERROR: peoplesign client: $errorSourceInfo: $message\n";

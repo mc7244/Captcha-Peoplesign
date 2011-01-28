@@ -50,10 +50,12 @@ if ( $ENV{REQUEST_METHOD} eq 'POST' ) {
     my $challengeResponseString = $query->param('captcha_peoplesignCRS');
     
     #Use the peoplesign client the check the users's response
-    my $res = $ps->check_answer(
-        $peoplesignKey, $clientLocation, 
-        $challengeSessionID, $challengeResponseString,
-    );
+    my $res = $ps->check_answer({
+        ps_key          => $peoplesignKey,
+        ps_location     => $clientLocation, 
+        ps_sessionid    => $challengeSessionID,
+        ps_response     => $challengeResponseString,
+    });
     
     if ( $res->{is_valid} ) {
         print $session->header(
@@ -81,11 +83,13 @@ if ( $ENV{REQUEST_METHOD} eq 'POST' ) {
 
 my $challengeSessionID = $session->param('challengeSessionID') || '';
 
-my $peoplesignHTML =  $ps->get_html(
-    $peoplesignKey, $clientLocation,
-    $peoplesignOptions, $query->remote_addr,
-    $challengeSessionID,
-);
+my $peoplesignHTML = $ps->get_html({
+    ps_key          => $peoplesignKey,
+    ps_location     => $clientLocation,
+    ps_options      => $peoplesignOptions,
+    ps_clientip     => $query->remote_addr,
+    ps_sessionid    => $challengeSessionID,
+});
 
 my $form = $h->form({
     method  => 'POST',

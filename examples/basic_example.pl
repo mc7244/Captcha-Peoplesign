@@ -8,6 +8,7 @@ use lib '../lib';
 use strict;
 use CGI::Carp qw/fatalsToBrowser/;
 use CGI;
+use CGI::Session;
 
 use Captcha::Peoplesign;
 
@@ -36,59 +37,46 @@ my $peoplesignOptions = {};
 #
 my $peoplesignOptions = "language=english&useDispersedPics=false&numPanels=2&numSmallPhotos=6&useDragAndDrop=false&challengeType=pairThePhoto&category=(all)&hideResponseAreaWhenInactive=false";
 
-#*WARNING*!!!
-#The function sends a cookie header to the
-#browser, so you *MUST* call it before you print the page headers--
-#especially the http "content-type: " header.
-#
-#If you're using CGI::header() or CGI::Session::header() to print your headers,
-#the cookie header won't be sent properly.  There are two solutions.  The first
-#is to manually print your headers after calling getPeoplesignHTML like we do
-#in this example.
-
-#If it's not possible to do that, you will need to look in the plugin file
-#and understand what getPeoplesignHTML is doing, and write your own version
-#that is compatible with the way your application handles sessions and cookies.
-#In short, getPeoplesignHTML calls
-#getPeoplesignSessionID (unless it finds a session id in the cookie),
-#then calls getPeoplesignHTMLJavascript, then sends the cookie.
-#Instead of using a cookie, you may want to use a session variable.
-#Either way, **you must delete the session id when the user passes peoplesign.*
-#
-#The reason we store the session id (instead of getting a new one each time) is
-#to allow peoplesign to automatically display a helpful message
-#in the event a user doesn't pass on the first try.
 
 my $ps = Captcha::Peoplesign->new();
+my $query = CGI->new();
+my $session = CGI::Session->new();
 
 if ( $ENV{REQUEST_METHOD} eq 'POST' ) {
-    my $query = CGI->new();
     my $challengeSessionID = $query->param('challengeSessionID');
     my $challengeResponseString = $query->param('captcha_peoplesignCRS');
     
     #Use the peoplesign client the check the users's response
-    my $allowPass = $ps->isPeoplesignResponseCorrect(
-        $challengeSessionID,$challengeResponseString,
-        $clientLocation, $peoplesignKey);
+    my $res = $ps->check_answer(
+        $peoplesignKey, $clientLocation, 
+        $challengeSessionID, $challengeResponseString,
+    );
     
-    if ($allowPass) {
-        #print $query->header(
-        #    -type       => 'text/html'
-        #);
-        print "Content-type: text/html\n\n";
+    if ( $res->{is_valid} ) {
+        print $session->header(
+            -type       => 'text/html'
+        );
         print "OK, you're human!";
     } else {
-        print "Location: $ENV{HTTP_REFERER}\n\n";
-        #print $query->header(
-        #    Location    => $ENV{HTTP_REFERER}
-        #);
+        warn $res->{error};
+        
+        # Store this as we need to know the session ID after the redirect
+        # it could also be passed via a GET parameter or so
+        $session->param('challengeSessionID', $challengeSessionID);
+        $session->flush();
+
+        print $session->header(
+            Location    => $ENV{HTTP_REFERER}
+        );
     }
     
     exit 0;
 }
 
-my $peoplesignHTML =  $ps->get_html(
-    $peoplesignKey, $peoplesignOptions, $clientLocation
+my $challengeSessionID = $session->param('challengeSessionID') || '';
+
+my ($peoplesignHTML) =  $ps->get_html(
+    $peoplesignKey, $clientLocation, $peoplesignOptions, $challengeSessionID,
 );
 
 printExamplePageAndFormHeaders();

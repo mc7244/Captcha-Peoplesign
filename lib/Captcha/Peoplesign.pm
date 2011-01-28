@@ -519,7 +519,7 @@ L<http://peoplesign.com>
 
 =head1 AUTHOR
 
-Andy Armstrong  C<< <andy@hexten.net> >>
+Michele Beltrame  C<< <mb@italpro.net> >>
 
 =head1 LICENSE AND COPYRIGHT
 
@@ -527,7 +527,8 @@ Copyright (c) 2011, Michele Beltrame C<< <mb@italpro.net> >>.
 
 Heavily based on the original Peoplesign Perl library by David B. Newquist.
 
-Interface taken from L<Captch::reCAPTCHA> module by Andy Armstrong.
+Some documentation and interface taken from L<Captch::reCAPTCHA> module
+by Andy Armstrong.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl 5 itself. See L<perlartistic>.

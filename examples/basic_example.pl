@@ -9,6 +9,7 @@ use strict;
 use CGI::Carp qw/fatalsToBrowser/;
 use CGI;
 use CGI::Session;
+use HTML::Tiny;
 
 use Captcha::Peoplesign;
 
@@ -37,10 +38,12 @@ my $peoplesignOptions = {};
 #
 my $peoplesignOptions = "language=english&useDispersedPics=false&numPanels=2&numSmallPhotos=6&useDragAndDrop=false&challengeType=pairThePhoto&category=(all)&hideResponseAreaWhenInactive=false";
 
-
+# Pass { html_mode => 'xml' } if you use XHTML
 my $ps = Captcha::Peoplesign->new();
+
 my $query = CGI->new();
 my $session = CGI::Session->new();
+my $h = HTML::Tiny->new(mode => 'html');
 
 if ( $ENV{REQUEST_METHOD} eq 'POST' ) {
     my $challengeSessionID = $query->param('challengeSessionID');
@@ -56,7 +59,10 @@ if ( $ENV{REQUEST_METHOD} eq 'POST' ) {
         print $session->header(
             -type       => 'text/html'
         );
-        print "OK, you're human!";
+        
+        print _make_page($h->p([
+            $h->strong('OK, you\'re human!')
+        ]));
     } else {
         warn $res->{error};
         
@@ -75,16 +81,62 @@ if ( $ENV{REQUEST_METHOD} eq 'POST' ) {
 
 my $challengeSessionID = $session->param('challengeSessionID') || '';
 
-my ($peoplesignHTML) =  $ps->get_html(
+my $peoplesignHTML =  $ps->get_html(
     $peoplesignKey, $clientLocation, $peoplesignOptions, $challengeSessionID,
 );
 
-printExamplePageAndFormHeaders();
-print $peoplesignHTML;
-printExampleFormAndPageFooters();
+my $form = $h->form({
+    method  => 'POST',
+    action  => $query->request_uri,
+}, [
+    $peoplesignHTML,
+    $h->input({
+        type    => 'submit',
+        value   => 'submit',
+    }),
+]);
+
+print $session->header(
+    -type       => 'text/html'
+);
+print _make_page($form);
 
 exit 0;
 
+
+sub _make_page {
+    my $content = shift;
+       
+    my $html = '<!DOCTYPE HTML>';
+    
+    $html .= $h->html([
+        $h->head([
+            $h->meta({
+                'http-equiv'    => 'pragma',
+                'content'       => 'no-cache',
+            }),
+            $h->meta({
+                'http-equiv'    => 'expires',
+                'content'       => '-1',
+            }),
+            $h->meta({
+                'http-equiv'    => 'content-type',
+                'content'       => 'text/html; charset=UTF-8',
+            }),
+            $h->title('Peoplesign Perl integration demo'),
+        ]),
+        $h->body([
+            $h->div({
+                style   => 'width:500px; margin: 0 auto 0 auto',
+            }, [
+                $h->p('This page is a demonstration of the peoplesign perl plugin'),
+                $content,
+            ])
+        ]),
+    ]);
+    
+    return $html;
+}
 sub printExamplePageAndFormHeaders{
     print "content-type: text/html\n\n";
     print qq(

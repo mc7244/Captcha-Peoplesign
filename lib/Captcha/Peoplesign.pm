@@ -39,11 +39,19 @@ sub new {
 
     croak "new must be called with a reference to a hash of parameters"
         unless ref $args eq 'HASH';
+        
+    $self->{_html_mode} = $args->{html_mode} || 'html';
 
     return $self;
 }
 
-sub _html { shift->{_html} ||= HTML::Tiny->new }
+sub _html {
+    my $self = shift;
+    
+    $self->{_html} ||= HTML::Tiny->new(
+        mode => $self->{_html_mode}
+    );
+}
 
 sub get_html {
     my $self = shift;
@@ -194,7 +202,7 @@ sub _get_peoplesign_sessionid {
     my $pluginWrapperVersionInfo = shift;
     my $peoplesignSessionID = shift;
 
-    my $userAgent = LWP::UserAgent->new();
+    my $ua = LWP::UserAgent->new();
 
     my $status;
 
@@ -213,20 +221,20 @@ sub _get_peoplesign_sessionid {
 
     $peoplesignKey = $self->_trim($peoplesignKey);
     $visitorIP  = $self->_trim($visitorIP);
-    #ensure private key is not the empty string
+ 
+    # Ensure private key is not the empty string
     if ($peoplesignKey eq "") {
-    $self->_print_error("received a private key that was all whitespace or empty\n", $self->_get_caller_info_string());
-    return ("invalidPrivateKey", "");
+        $self->_print_error("received a private key that was all whitespace or empty\n", $self->_get_caller_info_string());
+        return ("invalidPrivateKey", "");
     }
 
-    #ensure visitorIP is ipv4
-    if ( !($visitorIP =~ /^\d\d?\d?\.\d\d?\d?\.\d\d?\d?\.\d\d?\d?$/)) {
-    $self->_print_error("invalid visitorIP: $visitorIP\n", $self->_get_caller_info_string());
-    return ("invalidVisitorIP", "");
+    # Ensure visitorIP is ipv4
+    if ( !($visitorIP =~ /^\d\d?\d?\.\d\d?\d?\.\d\d?\d?\.\d\d?\d?$/) ) {
+        $self->_print_error("invalid visitorIP: $visitorIP\n", $self->_get_caller_info_string());
+        return ("invalidVisitorIP", "");
     }
 
-
-    my $response = $userAgent->post(
+    my $response = $ua->post(
         PEOPLESIGN_GET_CHALLENGE_SESSION_ID_URL, {
             privateKey                              => $peoplesignKey,
             visitorIP                               => $visitorIP,
@@ -314,10 +322,6 @@ sub _get_html_iframe {
     return $htmlcode;
 }
 
-
-################################################
-#misc internal subroutines
-################################################
 sub _clean_location_string{
     my $self = shift;
     #perl's session and cookie libraries will clean this string for us
@@ -366,13 +370,13 @@ Perl application
     my $ps = Captcha::Peoplesign->new;
 
     # Output form
-    print $c->get_html(
+    print $ps->get_html(
         'your_key', 'your_location'
         'options_string', 'challengeSessionID',
     );
 
     # Verify submission
-    my $result = $c->check_answer(
+    my $result = $ps->check_answer(
         'your_key', 'your_location',
         $challengeSessionID, $challengeResponseString,
     );
@@ -403,9 +407,21 @@ TODO-TODO-TODO
 
 =over
 
-=item C<< new >>
+=item C<< new >> 
 
-Create a new C<< Captcha::reCAPTCHA >>.
+Arguments: \%args
+
+Create a new C<< Captcha::Peoplesign >> object.
+
+=over
+
+=item C<< html_mode >>
+
+Sets what kind of HTML the library generates. Default is 'html',
+since we are going toward HTML5, but you can pass 'xml' if you
+use XHTML.
+
+=back
 
 =item C<< get_html( $pubkey, $error, $use_ssl, $options ) >>
 

@@ -1,7 +1,7 @@
 package Captcha::Peoplesign;
 
 BEGIN {
-  $Captcha::Peoplesign::VERSION = '0.00002';
+  $Captcha::Peoplesign::VERSION = '0.00003';
 }
 
 use strict;

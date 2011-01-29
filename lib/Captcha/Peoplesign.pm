@@ -1,7 +1,7 @@
 package Captcha::Peoplesign;
 
 BEGIN {
-  $Captcha::Peoplesign::VERSION = '0.00003';
+  $Captcha::Peoplesign::VERSION = '0.00004';
 }
 
 use strict;
@@ -535,14 +535,16 @@ L<http://peoplesign.com>
 
 Michele Beltrame  C<< <mb@italpro.net> >>
 
-=head1 LICENSE AND COPYRIGHT
-
-Copyright (c) 2011, Michele Beltrame C<< <mb@italpro.net> >>.
-
 Heavily based on the original Peoplesign Perl library by David B. Newquist.
 
 Some documentation and interface taken from L<Captch::reCAPTCHA> module
 by Andy Armstrong.
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright (c) 2011 Michele Beltrame C<< <mb@italpro.net> >>.
+
+Copyright (c) 2008-2010 David B Newquist, Myricomp LLC
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl 5 itself. See L<perlartistic>.

@@ -1,10 +1,10 @@
 Captcha::Peoplesign
 -------------------
 
-Easily integrate Peoplesign CAPTCHA in your Perl application
+Easily integrate Peoplesign CAPTCHA in your Perl application.
 
-Still TODO:
+TODO:
 
-- WRITE TESTS!!!!
+- WRITE MORE TESTS!!!!
+- Refactor internal API to use hashrefs
 - Improve documentation
-- refactor internal API to use hashrefs

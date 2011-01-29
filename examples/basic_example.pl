@@ -20,12 +20,8 @@ my $peoplesignKey = "5543333573134de45c8fdf9b4e8c1733";
 # Name for this location (must match the one used when creating the key)
 my $clientLocation = "PerlTest";
 
-# peoplesign args: - getPeoplesignHTML accepts two ways of passing parameters:
-#    array or challenge option string
-#  e.g. default
-my $peoplesignOptions = {};
-#
-#  e.g. pass an array
+my $peoplesignOptions = "language=english&useDispersedPics=false&numPanels=2&numSmallPhotos=6&useDragAndDrop=false&challengeType=pairThePhoto&category=(all)&hideResponseAreaWhenInactive=false";
+# ...it could also be an hash
 #my $peoplesignOptions = {
 #    challengeType         => "pairThePhoto",
 #    numPanels             => "2",
@@ -33,10 +29,6 @@ my $peoplesignOptions = {};
 #    useDispersedPics      => "false",
 #    smallPhotoAreaWidth   => ""
 #};
-#
-#  e.g. pass a challenge_option_string - (obtained from peoplesign.com demo page)
-#
-my $peoplesignOptions = "language=english&useDispersedPics=false&numPanels=2&numSmallPhotos=6&useDragAndDrop=false&challengeType=pairThePhoto&category=(all)&hideResponseAreaWhenInactive=false";
 
 # Pass { html_mode => 'xml' } if you use XHTML
 my $ps = Captcha::Peoplesign->new();

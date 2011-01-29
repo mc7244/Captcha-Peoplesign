@@ -1,5 +1,9 @@
 package Captcha::Peoplesign;
 
+BEGIN {
+  $Captcha::Peoplesign::VERSION = '0.00002';
+}
+
 use strict;
 use warnings;
 
@@ -7,8 +11,7 @@ use Carp qw/croak/;
 use HTML::Tiny;
 use LWP::UserAgent;
 
-use constant MODULE_VERSION => '0.00001';
-our $VERSION = '0.00001';
+use constant MODULE_VERSION => $Captcha::Peoplesign::VERSION;
 
 use constant PEOPLESIGN_HOST => 'peoplesign.com';
 
@@ -167,12 +170,9 @@ sub _get_peoplesign_session_status {
     return 'badHTTPResponseFromServer';
 }
 
-#return value
-##array with 2 elements
-###status
-####
-###peoplesignSessionID
-####a peoplesignSessionID is assigned to a given visitor and is valid until it passes a challenge
+# Return value : array with 2 elements (status, eoplesignSessionID)
+# A peoplesignSessionID is assigned to a given visitor and is valid
+# until he/she passes a challenge
 sub _get_peoplesign_sessionid {
     my $self = shift;
     my $peoplesignKey = shift;
@@ -186,14 +186,14 @@ sub _get_peoplesign_sessionid {
 
     my $status;
 
-    # challenge option string
+    # Peoplesign callenge option string
     if (ref($peoplesignOptions) ne "HASH") {
        my %hash = ();
 
        # decode the encoded string into a hash
        $peoplesignOptions = $self->_html->url_decode($peoplesignOptions);
-       foreach my $pair (split("&",$peoplesignOptions)){
-           my ($key,$value) = split("=", $pair);
+       foreach my $pair (split('&',$peoplesignOptions)){
+           my ($key,$value) = split('=', $pair);
            $hash{$key} = $value;
         }
         $peoplesignOptions = \%hash;
@@ -203,15 +203,15 @@ sub _get_peoplesign_sessionid {
     $visitorIP  = $self->_trim($visitorIP);
  
     # Ensure private key is not the empty string
-    if ($peoplesignKey eq "") {
+    if ($peoplesignKey eq '') {
         $self->_print_error("received a private key that was all whitespace or empty\n", $self->_get_caller_info_string());
-        return ("invalidPrivateKey", "");
+        return ('invalidPrivateKey', '');
     }
 
     # Ensure visitorIP is ipv4
     if ( !($visitorIP =~ /^\d\d?\d?\.\d\d?\d?\.\d\d?\d?\.\d\d?\d?$/) ) {
         $self->_print_error("invalid visitorIP: $visitorIP\n", $self->_get_caller_info_string());
-        return ("invalidVisitorIP", "");
+        return ('invalidVisitorIP', '');
     }
 
     my $response = $ua->post(
@@ -344,15 +344,19 @@ Perl application
 
     # Output form
     print $ps->get_html(
-        'your_key', 'your_location'
-        'options_string', 'challengeSessionID',
+        ps_key      => 'your_key',
+        ps_location => 'your_location',
+        ps_options  => 'options_string',
+        ps_sessionid=> 'challengeSessionID',
+        ps_clientip => 'nnn.nnn.nnn.nnn',
     );
 
     # Verify submission
     my $result = $ps->check_answer(
-        'your_key', 'your_location',
-        $challengeSessionID, $challengeResponseString,
-    );
+        ps_key      => 'your_key',
+        ps_location => 'your_location',
+        ps_sessionid=> $challengeSessionID,
+        ps_responde => $challengeResponseString,
     );
 
     if ( $result->{is_valid} ) {
@@ -442,9 +446,19 @@ error message to be displayed to the user.
 Optional.
 
 A string which allows to customize the Peoplesign widget. You
-can create it on Peopesign web site.
+can create it on Peopesign web site. I.e.:
 
-TODO: document that it's possible to pass ad hashref as well.
+ language=english&useDispersedPics=false&numPanels=2&numSmallPhotos=6&useDragAndDrop=false&challengeType=pairThePhoto&category=(all)&hideResponseAreaWhenInactive=false
+
+You can also pass and hashref, such as:
+
+ my $peoplesignOptions = {
+    challengeType         => "pairThePhoto",
+    numPanels             => "2",
+    numSmallPhotos        => "8",
+    useDispersedPics      => "false",
+    smallPhotoAreaWidth   => ""
+};
 
 =back
 

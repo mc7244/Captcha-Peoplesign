@@ -376,7 +376,7 @@ from the standard ones where you need to guess a difficult word.
 
 To use Peoplesign you need to register your site here:
 
-L<https://peoplesign.com>
+L<http://peoplesign.com>
 
 =head1 INTERFACE
 

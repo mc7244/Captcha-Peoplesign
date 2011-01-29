@@ -1,23 +1,23 @@
 #!/usr/bin/perl
 # Author: Michele Beltrame
-# Original author: Dave Newquist
-# License: perl6
+# Inspired by the original code by Dave Newquist (Peoplesign creator)
+# License: perl5
+
+use strict;
+use warnings;
 
 use lib '../lib';
 
-use strict;
 use CGI::Carp qw/fatalsToBrowser/;
 use CGI;
-use CGI::Session;
 use HTML::Tiny;
 
 use Captcha::Peoplesign;
 
-# Warbing: sample testing key (might not work)!
+# Sample testing key (might not work in the future)!
 my $peoplesignKey = "5543333573134de45c8fdf9b4e8c1733";
 
-# We create a name for this location (must match the one
-# used when creating the key)
+# Name for this location (must match the one used when creating the key)
 my $clientLocation = "PerlTest";
 
 # peoplesign args: - getPeoplesignHTML accepts two ways of passing parameters:
@@ -42,8 +42,11 @@ my $peoplesignOptions = "language=english&useDispersedPics=false&numPanels=2&num
 my $ps = Captcha::Peoplesign->new();
 
 my $query = CGI->new();
-my $session = CGI::Session->new();
 my $h = HTML::Tiny->new(mode => 'html');
+
+print $query->header(
+    -type       => 'text/html'
+);
 
 if ( $ENV{REQUEST_METHOD} eq 'POST' ) {
     my $challengeSessionID = $query->param('challengeSessionID');
@@ -58,30 +61,21 @@ if ( $ENV{REQUEST_METHOD} eq 'POST' ) {
     });
     
     if ( $res->{is_valid} ) {
-        print $session->header(
-            -type       => 'text/html'
-        );
-        
         print _make_page($h->p([
             $h->strong('OK, you\'re human!')
         ]));
-    } else {
-        warn $res->{error};
-        
-        # Store this as we need to know the session ID after the redirect
-        # it could also be passed via a GET parameter or so
-        $session->param('challengeSessionID', $challengeSessionID);
-        $session->flush();
-
-        print $session->header(
-            Location    => $ENV{HTTP_REFERER}
-        );
+        exit 0;
     }
     
-    exit 0;
+    warn $res->{error}; # This goes to error_log
+
+    # If you redirect to the original form, be sure to pass the
+    # challengeSessionID (via session, cookie, GET parameter, ...)
+    # (we do not redirect here, we just re-display the form, which
+    # is likely what most people do)
 }
 
-my $challengeSessionID = $session->param('challengeSessionID') || '';
+my $challengeSessionID = $query->param('challengeSessionID') || '';
 
 my $peoplesignHTML = $ps->get_html({
     ps_key          => $peoplesignKey,
@@ -102,9 +96,6 @@ my $form = $h->form({
     }),
 ]);
 
-print $session->header(
-    -type       => 'text/html'
-);
 print _make_page($form);
 
 exit 0;

@@ -1,7 +1,7 @@
 package Captcha::Peoplesign;
 
 BEGIN {
-  $Captcha::Peoplesign::VERSION = '0.00004';
+  $Captcha::Peoplesign::VERSION = '0.00005';
 }
 
 use strict;
@@ -343,21 +343,21 @@ Perl application
     my $ps = Captcha::Peoplesign->new;
 
     # Output form
-    print $ps->get_html(
+    print $ps->get_html({
         ps_key      => 'your_key',
         ps_location => 'your_location',
         ps_options  => 'options_string',
         ps_sessionid=> 'challengeSessionID',
         ps_clientip => 'nnn.nnn.nnn.nnn',
-    );
+    });
 
     # Verify submission
-    my $result = $ps->check_answer(
+    my $result = $ps->check_answer({
         ps_key      => 'your_key',
         ps_location => 'your_location',
         ps_sessionid=> $challengeSessionID,
         ps_responde => $challengeResponseString,
-    );
+    });
 
     if ( $result->{is_valid} ) {
         print "You're human!";
@@ -450,7 +450,7 @@ can create it on Peopesign web site. I.e.:
 
  language=english&useDispersedPics=false&numPanels=2&numSmallPhotos=6&useDragAndDrop=false&challengeType=pairThePhoto&category=(all)&hideResponseAreaWhenInactive=false
 
-You can also pass and hashref, such as:
+You can also pass an hashref, such as:
 
  my $peoplesignOptions = {
     challengeType         => "pairThePhoto",
